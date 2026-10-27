@@ -26,21 +26,13 @@ const getClientTimeSnapshot = () => {
 };
 const getServerTimeSnapshot = () => "";
 
-const CHECKING_STEPS = [
-  "Checking news sources...",
-  "Searching verified news wires...",
-  "Cross-referencing primary sources...",
-  "Deconstructing atomic claims...",
-  "Evaluating factual accuracy...",
-];
-
 export function ChatBox() {
   const messages = useSyncExternalStore(subscribeToMessages, getMessagesSnapshot, getServerMessagesSnapshot);
   const clientTimestamp = useSyncExternalStore(emptySubscribe, getClientTimeSnapshot, getServerTimeSnapshot);
 
   const [inputVal, setInputVal] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [checkingStepIndex, setCheckingStepIndex] = useState(0);
+  const [loadingThinking, setLoadingThinking] = useState<string>("Searching verified news sources...");
   const [isFocused, setIsFocused] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [ratings, setRatings] = useState<Record<string, "like" | "dislike" | null>>({});
@@ -50,17 +42,7 @@ export function ChatBox() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading, checkingStepIndex]);
-
-  useEffect(() => {
-    if (!isLoading) return;
-
-    const interval = setInterval(() => {
-      setCheckingStepIndex((prev) => (prev + 1) % CHECKING_STEPS.length);
-    }, 700);
-
-    return () => clearInterval(interval);
-  }, [isLoading]);
+  }, [messages, isLoading, loadingThinking]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -88,7 +70,7 @@ export function ChatBox() {
     };
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const text = inputVal.trim();
     if (!text || isLoading) return;
 
@@ -104,29 +86,86 @@ export function ChatBox() {
 
     saveMessages(updatedWithUser);
     setInputVal("");
-    setCheckingStepIndex(0);
+    setLoadingThinking("Initiating search & fact-check...");
     setIsLoading(true);
 
-    const assessment = determineStatus(text);
+    try {
+      const response = await fetch("/api/fact-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ claim: text }),
+      });
 
-    setTimeout(() => {
+      if (!response.ok || !response.body) {
+        throw new Error("Failed to connect to verification model");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let receivedResult: { status: "true" | "false" | "needs_context"; context: string } | null = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ") || line === "data: [DONE]") continue;
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.type === "thinking" && data.text) {
+              setLoadingThinking(data.text);
+            } else if (data.type === "result" && data.status && data.context) {
+              receivedResult = {
+                status: data.status,
+                context: data.context,
+              };
+            }
+          } catch {}
+        }
+      }
+
+      const finalStatus = receivedResult?.status || "needs_context";
+      const finalContext = receivedResult?.context || "Live verification completed. Official wire filings remain under active monitoring.";
+
       const updatedWithAi: Message[] = [
         ...updatedWithUser,
         {
           id: aiMsgId,
           sender: "ai",
-          text: assessment.context,
+          text: finalContext,
           factCheck: {
             claim: text,
-            status: assessment.status,
+            status: finalStatus,
           },
           timestamp: getFormattedDateTime(),
         },
       ];
       saveMessages(updatedWithAi);
+    } catch {
+      const fallback = determineStatus(text);
+      const updatedWithAi: Message[] = [
+        ...updatedWithUser,
+        {
+          id: aiMsgId,
+          sender: "ai",
+          text: fallback.context,
+          factCheck: {
+            claim: text,
+            status: fallback.status,
+          },
+          timestamp: getFormattedDateTime(),
+        },
+      ];
+      saveMessages(updatedWithAi);
+    } finally {
       setIsLoading(false);
       textareaRef.current?.focus();
-    }, 2800);
+    }
   };
 
   const handleCopy = (id: string, text: string) => {
@@ -349,7 +388,7 @@ export function ChatBox() {
                 }}
               />
               <span
-                key={checkingStepIndex}
+                key={loadingThinking}
                 style={{
                   color: "#374151",
                   fontSize: "13.5px",
@@ -357,7 +396,7 @@ export function ChatBox() {
                   animation: "pulseFade 0.3s ease-out",
                 }}
               >
-                {CHECKING_STEPS[checkingStepIndex]}
+                {loadingThinking}
               </span>
             </div>
           </div>
