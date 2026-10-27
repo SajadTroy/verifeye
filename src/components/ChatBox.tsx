@@ -12,13 +12,18 @@ interface Message {
   timestamp: string;
 }
 
+const getFormattedDateTime = () => {
+  const now = new Date();
+  return now.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + " • " + now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+};
+
 export function ChatBox() {
-  const [messages, setMessages] = useState<Message[]>([
+  const [messages, setMessages] = useState<Message[]>(() => [
     {
       id: "initial-msg",
       sender: "ai",
       text: "Hello! I am VerifEye, your AI news verification assistant. Send me any breaking news headline, viral claim, or article link, and I will fact-check it for you.",
-      timestamp: "",
+      timestamp: getFormattedDateTime(),
     },
   ]);
   const [inputVal, setInputVal] = useState("");
@@ -29,19 +34,6 @@ export function ChatBox() {
   const [counter, setCounter] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const getFormattedDateTime = () => {
-    const now = new Date();
-    return now.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + " • " + now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-  };
-
-  useEffect(() => {
-    setMessages((prev) =>
-      prev.map((m) =>
-        m.id === "initial-msg" && !m.timestamp ? { ...m, timestamp: getFormattedDateTime() } : m
-      )
-    );
-  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -187,7 +179,7 @@ export function ChatBox() {
                 }}
               >
                 {msg.sender === "user" && (
-                  <span style={{ fontSize: "11px", color: "#9ca3af", marginRight: "4px", userSelect: "none" }}>
+                  <span suppressHydrationWarning style={{ fontSize: "11px", color: "#9ca3af", marginRight: "4px", userSelect: "none" }}>
                     {msg.timestamp}
                   </span>
                 )}
@@ -284,7 +276,7 @@ export function ChatBox() {
                       />
                     </button>
 
-                    <span style={{ fontSize: "11px", color: "#9ca3af", marginLeft: "4px", userSelect: "none" }}>
+                    <span suppressHydrationWarning style={{ fontSize: "11px", color: "#9ca3af", marginLeft: "4px", userSelect: "none" }}>
                       {msg.timestamp}
                     </span>
                   </>
