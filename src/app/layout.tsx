@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VerifEye — Live AI News Fact-Checker & Claim Dissector",
+  title: "VerifEye - Live AI News Fact-Checker & Claim Dissector",
   description: "Real-time news verification and misinformation debunker powered by Meta AI models for the Meta Global AI Developer Hackathon.",
 };
 
