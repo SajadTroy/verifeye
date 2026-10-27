@@ -2,15 +2,14 @@
 
 import React, { useState, useRef, useEffect, useSyncExternalStore } from "react";
 import { ArrowRight, Loader2, Copy, Check, ThumbsUp, ThumbsDown, CornerDownLeft } from "lucide-react";
-import { FactCheckCard, FactCheckData } from "@/components/FactCheckCard";
-
-interface Message {
-  id: string;
-  sender: "ai" | "user";
-  text: string;
-  factCheck?: FactCheckData;
-  timestamp: string;
-}
+import { FactCheckCard } from "@/components/FactCheckCard";
+import { Message } from "@/types/chat";
+import {
+  getMessagesSnapshot,
+  getServerMessagesSnapshot,
+  subscribeToMessages,
+  saveMessages,
+} from "@/lib/chatStore";
 
 const getFormattedDateTime = () => {
   const now = new Date();
@@ -36,22 +35,16 @@ const CHECKING_STEPS = [
 ];
 
 export function ChatBox() {
+  const messages = useSyncExternalStore(subscribeToMessages, getMessagesSnapshot, getServerMessagesSnapshot);
   const clientTimestamp = useSyncExternalStore(emptySubscribe, getClientTimeSnapshot, getServerTimeSnapshot);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "initial-msg",
-      sender: "ai",
-      text: "Hello! I am VerifEye, your AI news verification assistant. Send me any breaking news headline, viral claim, or article link, and I will fact-check it for you.",
-      timestamp: "",
-    },
-  ]);
+
   const [inputVal, setInputVal] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [checkingStepIndex, setCheckingStepIndex] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [ratings, setRatings] = useState<Record<string, "like" | "dislike" | null>>({});
-  const [counter, setCounter] = useState(0);
+
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -99,16 +92,17 @@ export function ChatBox() {
     const text = inputVal.trim();
     if (!text || isLoading) return;
 
-    const userMsgId = `msg-${counter + 1}`;
-    const aiMsgId = `msg-${counter + 2}`;
-    setCounter((prev) => prev + 2);
+    const userMsgId = `msg-${Date.now()}-user`;
+    const aiMsgId = `msg-${Date.now()}-ai`;
 
     const currentTime = getFormattedDateTime();
 
-    setMessages((prev) => [
-      ...prev,
+    const updatedWithUser: Message[] = [
+      ...messages,
       { id: userMsgId, sender: "user", text, timestamp: currentTime },
-    ]);
+    ];
+
+    saveMessages(updatedWithUser);
     setInputVal("");
     setCheckingStepIndex(0);
     setIsLoading(true);
@@ -116,8 +110,8 @@ export function ChatBox() {
     const assessment = determineStatus(text);
 
     setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
+      const updatedWithAi: Message[] = [
+        ...updatedWithUser,
         {
           id: aiMsgId,
           sender: "ai",
@@ -128,7 +122,8 @@ export function ChatBox() {
           },
           timestamp: getFormattedDateTime(),
         },
-      ]);
+      ];
+      saveMessages(updatedWithAi);
       setIsLoading(false);
       textareaRef.current?.focus();
     }, 2800);
@@ -144,7 +139,8 @@ export function ChatBox() {
 
   const handleEdit = (index: number, text: string) => {
     setInputVal(text);
-    setMessages((prev) => prev.slice(0, index));
+    const sliced = messages.slice(0, index);
+    saveMessages(sliced);
     textareaRef.current?.focus();
   };
 
@@ -420,7 +416,7 @@ export function ChatBox() {
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               onKeyDown={handleKeyDown}
-              placeholder="Send news headline, link, or claim to fact-check..."
+              placeholder="Send news headline or claim to fact-check..."
               rows={3}
               disabled={isLoading}
               style={{
