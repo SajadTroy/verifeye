@@ -9,6 +9,7 @@ interface Message {
   sender: "ai" | "user";
   text: string;
   factCheck?: FactCheckData;
+  timestamp: string;
 }
 
 export function ChatBox() {
@@ -17,6 +18,7 @@ export function ChatBox() {
       id: "initial-msg",
       sender: "ai",
       text: "Hello! I am VerifEye, your AI news verification assistant. Send me any breaking news headline, viral claim, or article link, and I will fact-check it for you.",
+      timestamp: "",
     },
   ]);
   const [inputVal, setInputVal] = useState("");
@@ -27,6 +29,19 @@ export function ChatBox() {
   const [counter, setCounter] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const getFormattedDateTime = () => {
+    const now = new Date();
+    return now.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + " • " + now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  };
+
+  useEffect(() => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === "initial-msg" && !m.timestamp ? { ...m, timestamp: getFormattedDateTime() } : m
+      )
+    );
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -66,9 +81,11 @@ export function ChatBox() {
     const aiMsgId = `msg-${counter + 2}`;
     setCounter((prev) => prev + 2);
 
+    const currentTime = getFormattedDateTime();
+
     setMessages((prev) => [
       ...prev,
-      { id: userMsgId, sender: "user", text },
+      { id: userMsgId, sender: "user", text, timestamp: currentTime },
     ]);
     setInputVal("");
     setIsLoading(true);
@@ -86,6 +103,7 @@ export function ChatBox() {
             claim: text,
             status: assessment.status,
           },
+          timestamp: getFormattedDateTime(),
         },
       ]);
       setIsLoading(false);
@@ -168,6 +186,12 @@ export function ChatBox() {
                   padding: "0 2px",
                 }}
               >
+                {msg.sender === "user" && (
+                  <span style={{ fontSize: "11px", color: "#9ca3af", marginRight: "4px", userSelect: "none" }}>
+                    {msg.timestamp}
+                  </span>
+                )}
+
                 <button
                   type="button"
                   onClick={() => handleCopy(msg.id, msg.text)}
@@ -259,6 +283,10 @@ export function ChatBox() {
                         fill={currentRating === "dislike" ? "#ef4444" : "none"}
                       />
                     </button>
+
+                    <span style={{ fontSize: "11px", color: "#9ca3af", marginLeft: "4px", userSelect: "none" }}>
+                      {msg.timestamp}
+                    </span>
                   </>
                 )}
               </div>
