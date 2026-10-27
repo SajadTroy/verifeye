@@ -30,6 +30,12 @@ export function ChatBox() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
+  useEffect(() => {
+    if (!isLoading) {
+      textareaRef.current?.focus();
+    }
+  }, [isLoading]);
+
   const handleSend = () => {
     const text = inputVal.trim();
     if (!text || isLoading) return;
@@ -46,6 +52,7 @@ export function ChatBox() {
 
     setTimeout(() => {
       setIsLoading(false);
+      textareaRef.current?.focus();
     }, 1500);
   };
 
