@@ -7,3 +7,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Project Rules
+
+1. **No Code Comments**: Do not include any comments in any code files.
+2. **UI Theme**: Keep the user interface strictly in a white / light theme with clean, high-contrast, modern aesthetics.
