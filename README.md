@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VerifEye 👁️
+### Live AI News Fact-Checker & Multi-Source Claim Dissector
+> Built for the **Meta Global AI Developer Hackathon**
 
-## Getting Started
+VerifEye is an AI-powered verification assistant engineered to combat misinformation, sensationalized headlines, and unverified digital claims in real time. Powered by Meta's **`muse-spark-1.3-contributor`** reasoning model, VerifEye leverages autonomous web search grounding, live agent thinking streaming, and structured schema evaluation to deliver accurate truth assessments with multi-source corroboration.
 
-First, run the development server:
+---
+
+## ⚡ Key Highlights
+
+- **🧠 Powered by Meta Muse Spark 1.3 (`muse-spark-1.3-contributor`)**: Connects directly to Meta's flagship reasoning model configured with `temperature: 1`, `top_p: 1`, `max_output_tokens: 32000`, and `reasoning_effort: medium`.
+- **🌐 Autonomous Live Web Search Grounding**: Employs Meta's native `web_search` tool (`search_context_size: "medium"`) to query primary news wires, institutional disclosures, and cross-reference multiple independent sources.
+- **💭 Live Agent Thinking Streaming**: Real-time Server-Sent Events (SSE) stream the model's actual search queries and reasoning thoughts directly into the loading response bubble (*"Searching: NASA Artemis 1 launch date 2022"*, *"Analyzing wire reports..."*).
+- **📊 3-Split Truth Assessment Bar**: Clean, high-contrast visual meter highlighting the verified verdict:
+  - **`True`** (Verified by primary sources and institutional announcements)
+  - **`Needs Context`** (Emerging development, omitted qualifiers, or pending confirmation)
+  - **`False`** (Debunked assertion or unsubstantiated viral claim)
+- **📋 Structured Output via JSON Schema**: Enforces strict decoder-level schema validation returning typed status and corroboration context without fragile post-hoc text parsing.
+- **💾 LocalStorage Chat Persistence**: Single persistent chat history stored locally in browser storage with instant synchronization across tabs and page reloads.
+- **✨ Clean Light UI**: Modern high-contrast light theme built with React 19, Next.js 16, Lucide icons, and zero layout shift.
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+flowchart TD
+    User([User Submits News Claim]) --> UI[VerifEye Chat Interface]
+    UI -->|POST /api/fact-check| API[Next.js Streaming Route Handler]
+    API -->|SSE Stream Request| Meta[Meta Model API /v1/responses]
+    
+    subgraph Meta Muse Spark 1.3
+        Meta --> Thinking[Agent Reasoning Core]
+        Thinking --> Search[Live Web Search Tool]
+        Search --> Corroboration[Multi-Source Cross-Check]
+        Corroboration --> Schema[JSON Schema Output Decoder]
+    end
+    
+    Search -.->|Live Thinking & Query Deltas| UI
+    Schema -->|Structured Verdict & Context| UI
+    UI --> Storage[(Browser LocalStorage)]
+```
+
+---
+
+## 🚀 Getting Started
+
+### 1. Prerequisites
+
+- **Node.js** 18.17+ or later
+- **npm**, **yarn**, or **pnpm**
+- A Meta Model API Key
+
+### 2. Clone and Install Dependencies
+
+```bash
+git clone https://github.com/your-username/verifeye.git
+cd verifeye
+npm install
+```
+
+### 3. Environment Variables Configuration
+
+Create a `.env.local` file in the root directory:
+
+```env
+# Meta Model API Configuration
+META_MODEL_API_KEY="your_meta_model_api_key_here"
+META_MODEL_API_URL="https://api.meta.ai/v1"
+META_MODEL_NAME="muse-spark-1.3-contributor"
+```
+
+### 4. Run the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧪 Testing Claims
 
-## Learn More
+You can test VerifEye with various real and viral claims:
 
-To learn more about Next.js, take a look at the following resources:
+| Claim | Expected Verdict | Reason |
+|---|---|---|
+| *"NASA launched the Artemis I mission to the Moon in November 2022."* | **True** | Corroborated by official NASA mission records and flight telemetry. |
+| *"Cochin International Airport in Kerala is the world's first fully solar-powered airport."* | **True** | Verified by UN Champions of the Earth recognition and CIAL filings. |
+| *"NASA confirmed Earth will experience 15 days of complete darkness this November."* | **False** | Recurring viral hoax with zero astronomical or institutional substantiation. |
+| *"Scientists have successfully cloned a live woolly mammoth and will release a herd into Siberia next month."* | **False** | De-extinction genetic editing research is active, but no live specimen has been birthed or scheduled for release. |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ Tech Stack
 
-## Deploy on Vercel
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router & React Server Components)
+- **Library**: [React 19](https://react.dev/)
+- **Language**: [TypeScript 5](https://www.typescriptlang.org/)
+- **AI Model**: [Meta Muse Spark 1.3](https://api.meta.ai/) (`muse-spark-1.3-contributor`)
+- **Search Tool**: Meta Native `web_search` with medium context size
+- **Streaming**: Server-Sent Events (SSE) via Web Streams API
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Styling**: Vanilla CSS Design System with custom micro-animations
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📄 License
+
+This project was developed for the Meta Global AI Developer Hackathon.
