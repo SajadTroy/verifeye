@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import { ChatBox } from "@/components/ChatBox";
 
@@ -34,7 +35,9 @@ export default function Home() {
       </header>
 
       <main style={{ flex: 1, display: "flex", flexDirection: "column", width: "100%" }}>
-        <ChatBox />
+        <Suspense fallback={null}>
+          <ChatBox />
+        </Suspense>
       </main>
     </div>
   );

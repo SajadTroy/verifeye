@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useSyncExternalStore } from "react";
 import { ArrowRight, Loader2, Copy, Check, ThumbsUp, ThumbsDown, CornerDownLeft } from "lucide-react";
 import { FactCheckCard, FactCheckData } from "@/components/FactCheckCard";
 
@@ -17,17 +17,37 @@ const getFormattedDateTime = () => {
   return now.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + " • " + now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 };
 
+const emptySubscribe = () => () => {};
+let cachedClientTime = "";
+const getClientTimeSnapshot = () => {
+  if (!cachedClientTime) {
+    cachedClientTime = getFormattedDateTime();
+  }
+  return cachedClientTime;
+};
+const getServerTimeSnapshot = () => "";
+
+const CHECKING_STEPS = [
+  "Checking news sources...",
+  "Searching verified news wires...",
+  "Cross-referencing primary sources...",
+  "Deconstructing atomic claims...",
+  "Evaluating factual accuracy...",
+];
+
 export function ChatBox() {
-  const [messages, setMessages] = useState<Message[]>(() => [
+  const clientTimestamp = useSyncExternalStore(emptySubscribe, getClientTimeSnapshot, getServerTimeSnapshot);
+  const [messages, setMessages] = useState<Message[]>([
     {
       id: "initial-msg",
       sender: "ai",
       text: "Hello! I am VerifEye, your AI news verification assistant. Send me any breaking news headline, viral claim, or article link, and I will fact-check it for you.",
-      timestamp: getFormattedDateTime(),
+      timestamp: "",
     },
   ]);
   const [inputVal, setInputVal] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [checkingStepIndex, setCheckingStepIndex] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [ratings, setRatings] = useState<Record<string, "like" | "dislike" | null>>({});
@@ -37,7 +57,17 @@ export function ChatBox() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]);
+  }, [messages, isLoading, checkingStepIndex]);
+
+  useEffect(() => {
+    if (!isLoading) return;
+
+    const interval = setInterval(() => {
+      setCheckingStepIndex((prev) => (prev + 1) % CHECKING_STEPS.length);
+    }, 700);
+
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -80,6 +110,7 @@ export function ChatBox() {
       { id: userMsgId, sender: "user", text, timestamp: currentTime },
     ]);
     setInputVal("");
+    setCheckingStepIndex(0);
     setIsLoading(true);
 
     const assessment = determineStatus(text);
@@ -100,7 +131,7 @@ export function ChatBox() {
       ]);
       setIsLoading(false);
       textareaRef.current?.focus();
-    }, 1200);
+    }, 2800);
   };
 
   const handleCopy = (id: string, text: string) => {
@@ -137,6 +168,7 @@ export function ChatBox() {
         {messages.map((msg, index) => {
           const isCopied = copiedId === msg.id;
           const currentRating = ratings[msg.id];
+          const msgTime = msg.timestamp || clientTimestamp;
 
           return (
             <div
@@ -180,7 +212,7 @@ export function ChatBox() {
               >
                 {msg.sender === "user" && (
                   <span suppressHydrationWarning style={{ fontSize: "11px", color: "#9ca3af", marginRight: "4px", userSelect: "none" }}>
-                    {msg.timestamp}
+                    {msgTime}
                   </span>
                 )}
 
@@ -277,7 +309,7 @@ export function ChatBox() {
                     </button>
 
                     <span suppressHydrationWarning style={{ fontSize: "11px", color: "#9ca3af", marginLeft: "4px", userSelect: "none" }}>
-                      {msg.timestamp}
+                      {msgTime}
                     </span>
                   </>
                 )}
@@ -285,6 +317,55 @@ export function ChatBox() {
             </div>
           );
         })}
+        {isLoading && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              width: "100%",
+              gap: "4px",
+            }}
+          >
+            <div
+              style={{
+                maxWidth: "88%",
+                padding: "12px 18px",
+                borderRadius: "14px 14px 14px 2px",
+                background: "#f9fafb",
+                color: "#111827",
+                fontSize: "14px",
+                lineHeight: 1.5,
+                border: "1px solid #e5e7eb",
+                boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
+              <Loader2
+                size={15}
+                strokeWidth={2.2}
+                style={{
+                  animation: "spin 0.8s linear infinite",
+                  color: "#24b47e",
+                  flexShrink: 0,
+                }}
+              />
+              <span
+                key={checkingStepIndex}
+                style={{
+                  color: "#374151",
+                  fontSize: "13.5px",
+                  fontWeight: 450,
+                  animation: "pulseFade 0.3s ease-out",
+                }}
+              >
+                {CHECKING_STEPS[checkingStepIndex]}
+              </span>
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
