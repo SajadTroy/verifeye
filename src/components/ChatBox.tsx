@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { ArrowRight, Loader2, Copy, Check, ThumbsUp, ThumbsDown, Pencil } from "lucide-react";
+import { ArrowRight, Loader2, Copy, Check, ThumbsUp, ThumbsDown, CornerDownLeft } from "lucide-react";
 
 interface Message {
   id: string;
@@ -166,7 +166,7 @@ export function ChatBox() {
                       transition: "color 0.15s",
                     }}
                   >
-                    <Pencil size={13} strokeWidth={1.8} />
+                    <CornerDownLeft size={13} strokeWidth={1.8} />
                   </button>
                 )}
 
