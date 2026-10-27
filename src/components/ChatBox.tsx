@@ -2,11 +2,13 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { ArrowRight, Loader2, Copy, Check, ThumbsUp, ThumbsDown, CornerDownLeft } from "lucide-react";
+import { FactCheckCard, FactCheckData } from "@/components/FactCheckCard";
 
 interface Message {
   id: string;
   sender: "ai" | "user";
   text: string;
+  factCheck?: FactCheckData;
 }
 
 export function ChatBox() {
@@ -36,24 +38,59 @@ export function ChatBox() {
     }
   }, [isLoading]);
 
+  const determineStatus = (text: string): { status: "true" | "false" | "needs_context"; context: string } => {
+    const lower = text.toLowerCase();
+    if (/fake|hoax|conspiracy|cure cancer|5g causes|banned everywhere|eradicates/i.test(lower)) {
+      return {
+        status: "false",
+        context: "Independent scientific consensus, verified wire agencies, and primary regulators have identified no substantiating evidence for this assertion.",
+      };
+    }
+    if (/unconfirmed|rumor|secret|alleged|leak|miracle/i.test(lower)) {
+      return {
+        status: "needs_context",
+        context: "While elements reflect emerging developments, secondary confirmations and official agency filings remain pending. Important qualifications are omitted.",
+      };
+    }
+    return {
+      status: "true",
+      context: "Primary reporting corroborates the central assertion. The factual disclosures align with direct institutional announcements and wire dispatches.",
+    };
+  };
+
   const handleSend = () => {
     const text = inputVal.trim();
     if (!text || isLoading) return;
 
-    const newId = `msg-${counter + 1}`;
-    setCounter((prev) => prev + 1);
+    const userMsgId = `msg-${counter + 1}`;
+    const aiMsgId = `msg-${counter + 2}`;
+    setCounter((prev) => prev + 2);
 
     setMessages((prev) => [
       ...prev,
-      { id: newId, sender: "user", text },
+      { id: userMsgId, sender: "user", text },
     ]);
     setInputVal("");
     setIsLoading(true);
 
+    const assessment = determineStatus(text);
+
     setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: aiMsgId,
+          sender: "ai",
+          text: assessment.context,
+          factCheck: {
+            claim: text,
+            status: assessment.status,
+          },
+        },
+      ]);
       setIsLoading(false);
       textareaRef.current?.focus();
-    }, 1500);
+    }, 1200);
   };
 
   const handleCopy = (id: string, text: string) => {
@@ -104,8 +141,8 @@ export function ChatBox() {
             >
               <div
                 style={{
-                  maxWidth: "85%",
-                  padding: "12px 18px",
+                  maxWidth: "88%",
+                  padding: "14px 18px",
                   borderRadius: msg.sender === "user" ? "14px 14px 2px 14px" : "14px 14px 14px 2px",
                   background: msg.sender === "user" ? "#24b47e" : "#f9fafb",
                   color: msg.sender === "user" ? "#ffffff" : "#111827",
@@ -113,11 +150,14 @@ export function ChatBox() {
                   lineHeight: 1.5,
                   border: msg.sender === "ai" ? "1px solid #e5e7eb" : "none",
                   boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-                  whiteSpace: "pre-wrap",
                   wordBreak: "break-word",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
                 }}
               >
-                {msg.text}
+                <div style={{ whiteSpace: "pre-wrap" }}>{msg.text}</div>
+                {msg.factCheck && <FactCheckCard data={msg.factCheck} />}
               </div>
 
               <div
