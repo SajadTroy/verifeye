@@ -12,3 +12,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 1. **No Code Comments**: Do not include any comments in any code files.
 2. **UI Theme**: Keep the user interface strictly in a white / light theme with clean, high-contrast, modern aesthetics.
+3. **Maximize Server-Side Rendering (SSR)**: Maximize Server-Side Rendering and React Server Components (RSC) across the entire application. Treat all components as Server Components by default; only designate a component as a Client Component (`"use client"`) when strictly necessary for user interactions, browser APIs, or stateful hooks. Keep Client Components isolated to small, discrete leaf nodes to maximize performance, streaming capabilities, and SEO.
