@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, Copy, Check, ThumbsUp, ThumbsDown, Pencil } from "lucide-react";
 
 interface Message {
   id: string;
@@ -20,8 +20,11 @@ export function ChatBox() {
   const [inputVal, setInputVal] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [ratings, setRatings] = useState<Record<string, "like" | "dislike" | null>>({});
   const [counter, setCounter] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -46,6 +49,27 @@ export function ChatBox() {
     }, 1500);
   };
 
+  const handleCopy = (id: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => {
+      setCopiedId(null);
+    }, 1800);
+  };
+
+  const handleEdit = (index: number, text: string) => {
+    setInputVal(text);
+    setMessages((prev) => prev.slice(0, index));
+    textareaRef.current?.focus();
+  };
+
+  const handleRate = (id: string, type: "like" | "dislike") => {
+    setRatings((prev) => ({
+      ...prev,
+      [id]: prev[id] === type ? null : type,
+    }));
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -55,35 +79,145 @@ export function ChatBox() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1, width: "100%", maxWidth: "720px", margin: "0 auto" }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "16px 16px 180px 16px", flex: 1 }}>
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            style={{
-              display: "flex",
-              justifyContent: msg.sender === "user" ? "flex-end" : "flex-start",
-              width: "100%",
-            }}
-          >
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px", padding: "16px 16px 180px 16px", flex: 1 }}>
+        {messages.map((msg, index) => {
+          const isCopied = copiedId === msg.id;
+          const currentRating = ratings[msg.id];
+
+          return (
             <div
+              key={msg.id}
               style={{
-                maxWidth: "85%",
-                padding: "10px 16px",
-                borderRadius: msg.sender === "user" ? "12px 12px 2px 12px" : "12px 12px 12px 2px",
-                background: msg.sender === "user" ? "#24b47e" : "#f9fafb",
-                color: msg.sender === "user" ? "#ffffff" : "#111827",
-                fontSize: "14px",
-                lineHeight: 1.5,
-                border: msg.sender === "ai" ? "1px solid #e5e7eb" : "none",
-                boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-word",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: msg.sender === "user" ? "flex-end" : "flex-start",
+                width: "100%",
+                gap: "4px",
               }}
             >
-              {msg.text}
+              <div
+                style={{
+                  maxWidth: "85%",
+                  padding: "12px 18px",
+                  borderRadius: msg.sender === "user" ? "14px 14px 2px 14px" : "14px 14px 14px 2px",
+                  background: msg.sender === "user" ? "#24b47e" : "#f9fafb",
+                  color: msg.sender === "user" ? "#ffffff" : "#111827",
+                  fontSize: "14px",
+                  lineHeight: 1.5,
+                  border: msg.sender === "ai" ? "1px solid #e5e7eb" : "none",
+                  boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                }}
+              >
+                {msg.text}
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "0 2px",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => handleCopy(msg.id, msg.text)}
+                  title={isCopied ? "Copied!" : "Copy message"}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: isCopied ? "#24b47e" : "#9ca3af",
+                    cursor: "pointer",
+                    padding: "3px 4px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "4px",
+                    transition: "color 0.15s",
+                  }}
+                >
+                  {isCopied ? <Check size={14} strokeWidth={2.2} /> : <Copy size={14} strokeWidth={1.8} />}
+                </button>
+
+                {msg.sender === "user" && (
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(index, msg.text)}
+                    title="Edit message"
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "#9ca3af",
+                      cursor: "pointer",
+                      padding: "3px 4px",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderRadius: "4px",
+                      transition: "color 0.15s",
+                    }}
+                  >
+                    <Pencil size={13} strokeWidth={1.8} />
+                  </button>
+                )}
+
+                {msg.sender === "ai" && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleRate(msg.id, "like")}
+                      title="Good response"
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: currentRating === "like" ? "#24b47e" : "#9ca3af",
+                        cursor: "pointer",
+                        padding: "3px 4px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: "4px",
+                        transition: "color 0.15s",
+                      }}
+                    >
+                      <ThumbsUp
+                        size={14}
+                        strokeWidth={1.8}
+                        fill={currentRating === "like" ? "#24b47e" : "none"}
+                      />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRate(msg.id, "dislike")}
+                      title="Bad response"
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: currentRating === "dislike" ? "#ef4444" : "#9ca3af",
+                        cursor: "pointer",
+                        padding: "3px 4px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: "4px",
+                        transition: "color 0.15s",
+                      }}
+                    >
+                      <ThumbsDown
+                        size={14}
+                        strokeWidth={1.8}
+                        fill={currentRating === "dislike" ? "#ef4444" : "none"}
+                      />
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         <div ref={bottomRef} />
       </div>
 
@@ -120,6 +254,7 @@ export function ChatBox() {
             }}
           >
             <textarea
+              ref={textareaRef}
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
               onFocus={() => setIsFocused(true)}
