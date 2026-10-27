@@ -1,5 +1,4 @@
 import React from "react";
-import { CheckCircle2, AlertCircle, XCircle } from "lucide-react";
 
 export type FactStatus = "true" | "false" | "needs_context";
 
@@ -14,33 +13,6 @@ interface FactCheckCardProps {
 
 export function FactCheckCard({ data }: FactCheckCardProps) {
   const { status, claim } = data;
-
-  const statusConfig = {
-    true: {
-      label: "True",
-      color: "#059669",
-      bg: "#ecfdf5",
-      border: "#a7f3d0",
-      activeColor: "#24b47e",
-      icon: <CheckCircle2 size={14} strokeWidth={2.2} />,
-    },
-    needs_context: {
-      label: "Needs Context",
-      color: "#b45309",
-      bg: "#fffbeb",
-      border: "#fde68a",
-      activeColor: "#f59e0b",
-      icon: <AlertCircle size={14} strokeWidth={2.2} />,
-    },
-    false: {
-      label: "False",
-      color: "#dc2626",
-      bg: "#fef2f2",
-      border: "#fecaca",
-      activeColor: "#ef4444",
-      icon: <XCircle size={14} strokeWidth={2.2} />,
-    },
-  }[status];
 
   return (
     <div
@@ -57,29 +29,6 @@ export function FactCheckCard({ data }: FactCheckCardProps) {
         width: "100%",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
-        <span style={{ fontSize: "11px", fontWeight: 700, color: "#6b7280", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-          Fact Check Assessment
-        </span>
-
-        <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "5px",
-            background: statusConfig.bg,
-            color: statusConfig.color,
-            border: `1px solid ${statusConfig.border}`,
-            borderRadius: "6px",
-            padding: "3px 8px",
-            fontSize: "12px",
-            fontWeight: 600,
-          }}
-        >
-          {statusConfig.icon}
-          <span>{statusConfig.label}</span>
-        </span>
-      </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
         <div style={{ display: "flex", gap: "4px", width: "100%", height: "6px" }}>
