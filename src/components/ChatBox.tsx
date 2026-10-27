@@ -86,7 +86,7 @@ export function ChatBox() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1, width: "100%", maxWidth: "720px", margin: "0 auto" }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: "20px", padding: "16px 16px 180px 16px", flex: 1 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px", padding: "16px 16px 240px 16px", flex: 1 }}>
         {messages.map((msg, index) => {
           const isCopied = copiedId === msg.id;
           const currentRating = ratings[msg.id];
@@ -231,17 +231,29 @@ export function ChatBox() {
       <div
         style={{
           position: "fixed",
-          bottom: "24px",
+          bottom: 0,
           left: 0,
           right: 0,
           display: "flex",
           justifyContent: "center",
-          padding: "0 16px",
+          padding: "24px 16px 20px 16px",
+          background: "linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.95) 24%, #ffffff 100%)",
           zIndex: 50,
           pointerEvents: "none",
         }}
       >
         <div style={{ maxWidth: "720px", width: "100%", pointerEvents: "auto" }}>
+          <div
+            style={{
+              textAlign: "center",
+              fontSize: "11px",
+              color: "#6b7280",
+              marginBottom: "8px",
+              userSelect: "none",
+            }}
+          >
+            VerifEye can make mistakes. Always cross-check critical news and claims with official primary sources.
+          </div>
           <form
             onSubmit={(e) => {
               e.preventDefault();
