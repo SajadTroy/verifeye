@@ -1,27 +1,27 @@
-# VerifEye 👁️
-### Live AI News Fact-Checker & Multi-Source Claim Dissector
+# VerifEye
+### Live AI News Fact-Checker and Multi-Source Claim Dissector
 > Built for the **Meta Global AI Developer Hackathon**
 
-VerifEye is an AI-powered verification assistant engineered to combat misinformation, sensationalized headlines, and unverified digital claims in real time. Powered by Meta's **`muse-spark-1.3-contributor`** reasoning model, VerifEye leverages autonomous web search grounding, live agent thinking streaming, and structured schema evaluation to deliver accurate truth assessments with multi-source corroboration.
+VerifEye is an AI-powered verification platform engineered to combat misinformation, sensationalized headlines, and unverified digital claims in real time. Powered by Meta's **`muse-spark-1.3-contributor`** reasoning model, VerifEye leverages autonomous web search grounding, live agent thinking streaming, and structured schema evaluation to deliver accurate truth assessments with multi-source corroboration.
 
 ---
 
-## ⚡ Key Highlights
+## Key Highlights
 
-- **🧠 Powered by Meta Muse Spark 1.3 (`muse-spark-1.3-contributor`)**: Connects directly to Meta's flagship reasoning model configured with `temperature: 1`, `top_p: 1`, `max_output_tokens: 32000`, and `reasoning_effort: medium`.
-- **🌐 Autonomous Live Web Search Grounding**: Employs Meta's native `web_search` tool (`search_context_size: "medium"`) to query primary news wires, institutional disclosures, and cross-reference multiple independent sources.
-- **💭 Live Agent Thinking Streaming**: Real-time Server-Sent Events (SSE) stream the model's actual search queries and reasoning thoughts directly into the loading response bubble (*"Searching: NASA Artemis 1 launch date 2022"*, *"Analyzing wire reports..."*).
-- **📊 3-Split Truth Assessment Bar**: Clean, high-contrast visual meter highlighting the verified verdict:
-  - **`True`** (Verified by primary sources and institutional announcements)
-  - **`Needs Context`** (Emerging development, omitted qualifiers, or pending confirmation)
-  - **`False`** (Debunked assertion or unsubstantiated viral claim)
-- **📋 Structured Output via JSON Schema**: Enforces strict decoder-level schema validation returning typed status and corroboration context without fragile post-hoc text parsing.
-- **💾 LocalStorage Chat Persistence**: Single persistent chat history stored locally in browser storage with instant synchronization across tabs and page reloads.
-- **✨ Clean Light UI**: Modern high-contrast light theme built with React 19, Next.js 16, Lucide icons, and zero layout shift.
+- **Meta Muse Spark 1.3 (`muse-spark-1.3-contributor`)**: Directly connects to Meta's flagship reasoning model configured with `temperature: 1`, `top_p: 1`, `max_output_tokens: 32000`, and `reasoning_effort: medium`.
+- **Autonomous Live Web Search Grounding**: Employs Meta's native `web_search` tool (`search_context_size: "medium"`) to query primary news wires, institutional disclosures, and cross-reference multiple independent sources.
+- **Live Agent Thinking Streaming**: Real-time Server-Sent Events (SSE) stream the model's intermediate search queries and reasoning thoughts directly into the response bubble (*"Searching: NASA Artemis 1 launch date 2022"*, *"Analyzing wire reports..."*).
+- **3-Split Truth Assessment Bar**: High-contrast visual indicator highlighting the verified verdict:
+  - **`True`**: Verified by primary sources and institutional announcements.
+  - **`Needs Context`**: Emerging developments, omitted qualifiers, or pending confirmation.
+  - **`False`**: Debunked assertions or unsubstantiated viral claims.
+- **Structured Output via JSON Schema**: Enforces strict decoder-level schema validation returning typed status and corroboration context without post-hoc text parsing.
+- **LocalStorage Chat Persistence**: Single persistent chat history stored locally in browser storage with instant synchronization across tabs and page reloads.
+- **Modern Light UI**: High-contrast light theme built with React 19, Next.js 16, Lucide icons, and zero layout shift.
 
 ---
 
-## 🏗️ Architecture
+## System Architecture
 
 ```mermaid
 flowchart TD
@@ -43,11 +43,11 @@ flowchart TD
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Prerequisites
 
-- **Node.js** 18.17+ or later
+- **Node.js** 18.17 or later
 - **npm**, **yarn**, or **pnpm**
 - A Meta Model API Key
 
@@ -64,7 +64,6 @@ npm install
 Create a `.env.local` file in the root directory:
 
 ```env
-# Meta Model API Configuration
 META_MODEL_API_KEY="your_meta_model_api_key_here"
 META_MODEL_API_URL="https://api.meta.ai/v1"
 META_MODEL_NAME="muse-spark-1.3-contributor"
@@ -80,9 +79,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🧪 Testing Claims
-
-You can test VerifEye with various real and viral claims:
+## Sample Claims for Testing
 
 | Claim | Expected Verdict | Reason |
 |---|---|---|
@@ -93,7 +90,7 @@ You can test VerifEye with various real and viral claims:
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router & React Server Components)
 - **Library**: [React 19](https://react.dev/)
@@ -106,6 +103,6 @@ You can test VerifEye with various real and viral claims:
 
 ---
 
-## 📄 License
+## License
 
 This project was developed for the Meta Global AI Developer Hackathon.
