@@ -95,7 +95,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router & React Server Components)
 - **Library**: [React 19](https://react.dev/)
 - **Language**: [TypeScript 5](https://www.typescriptlang.org/)
-- **AI Model**: [Meta Muse Spark 1.3](https://api.meta.ai/) (`muse-spark-1.3-contributor`)
+- **AI Model**: [Meta Muse Spark 1.3](https://dev.meta.ai/models/muse-spark) (`muse-spark-1.3-contributor`)
 - **Search Tool**: Meta Native `web_search` with medium context size
 - **Streaming**: Server-Sent Events (SSE) via Web Streams API
 - **Icons**: [Lucide React](https://lucide.dev/)
